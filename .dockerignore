@@ -1,0 +1,24 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python byte-code & caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment files with sensitive keys
+.env
+
+# Git & IDEs
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Downloaded markdown outputs
+*.md
+!app/knowledge/*.md

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  cognimesh-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cognimesh_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Volume mount for hot-reloading during local development
+      - ./app:/app/app
+      - ./main.py:/app/main.py
+    environment:
+      - PORT=8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    name: cognimesh-network
