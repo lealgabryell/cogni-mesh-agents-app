@@ -4,7 +4,8 @@ FROM python:3.11-slim
 # 2. Prevent Python from writing .pyc files and enable unbuffered logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    WORKDIR=/app
+    WORKDIR=/app \
+    VIRTUAL_ENV=/opt/venv
 
 # 3. Set working directory inside the container
 WORKDIR ${WORKDIR}
@@ -15,22 +16,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Copy requirements first to leverage Docker layer caching
+# 5. Create the virtual environment and put it first on PATH
+RUN python -m venv ${VIRTUAL_ENV}
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+# 6. Copy requirements first to leverage Docker layer caching
 COPY requirements.txt .
 
-# 6. Install Python dependencies
+# 7. Install Python dependencies inside the virtual environment
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# 7. Copy the rest of the application code
+# 8. Copy the rest of the application code
 COPY . .
 
-# 8. Expose FastAPI default port
+# 9. Expose FastAPI default port
 EXPOSE 8000
 
-# 9. Healthcheck to ensure container stability
+# 10. Healthcheck to ensure container stability
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# 10. Run FastAPI server using Uvicorn
+# 11. Run FastAPI server using Uvicorn from the virtual environment
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
